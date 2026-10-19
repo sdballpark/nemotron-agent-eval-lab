@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Secrets: never commit
+.env
+.env.*
+!.env.example
+*secrets*
+*.key
+
+# Run artifacts: raw traces stay local, summaries get committed deliberately
+runs/
+*.jsonl
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
