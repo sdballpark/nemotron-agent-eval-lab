@@ -4,6 +4,8 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.12"
 dependencies = [
+    "langchain-core==1.6.0",
+    "langgraph==1.2.11",
     "openai==3.35.1",
     "pydantic==2.14.1",
 ]
