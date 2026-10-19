@@ -1,0 +1,14 @@
+# Verified endpoints only. Reasoning and max_tokens are set per run on the command line.
+
+[lightning-q4-local]
+base_url = "http://localhost:11434/v1"
+model = "nemotron-lightning-q4-32k"
+max_tokens = 1200
+temperature = 0.0
+
+[lightning-hosted]
+base_url = "https://integrate.api.nvidia.com/v1"
+model = "nvidia/nemotron-3.5-lightning-30b-a3b"
+api_key_env = "NVIDIA_API_KEY"
+max_tokens = 1200
+temperature = 0.0
