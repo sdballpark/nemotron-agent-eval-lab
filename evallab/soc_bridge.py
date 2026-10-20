@@ -108,12 +108,19 @@ class AdapterTriageModel:
                 raise TriageCallError(f"invalid after repair: {second_error}", list(self.attempts)) from second_error
 
 
-def build_pipeline(cfg: EndpointConfig, alerts: list[dict], retries: int):
-    """Same enrichment chain as scripts/run_eval.py without fault injection."""
+def build_pipeline(cfg: EndpointConfig, alerts: list[dict], retries: int, related_render: str | None = None):
+    """Same enrichment chain as scripts/run_eval.py without fault injection.
+
+    related_render None keeps soc_triage's own rendering. "hours-v1" shows
+    related-alert gaps and the window in hours and minutes (evallab.rendering).
+    """
     from soc_triage.enrichment.base import ResilientEnrichment, RetryPolicy
     from soc_triage.enrichment.stubs import LocalEnrichment
     from soc_triage.pipeline.graph import TriagePipeline
 
+    from evallab.rendering import wrap_enrichment
+
     model = AdapterTriageModel(cfg)
     enrichment = ResilientEnrichment(LocalEnrichment(alerts), RetryPolicy(max_attempts=retries))
+    enrichment = wrap_enrichment(enrichment, related_render)
     return TriagePipeline(enrichment, model), model
