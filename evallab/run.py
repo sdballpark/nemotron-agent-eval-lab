@@ -27,6 +27,7 @@ from importlib.metadata import version
 from pathlib import Path
 
 from evallab.adapter import EndpointConfig, complete, make_client
+from evallab.rendering import RENDERS
 from evallab.soc_bridge import TriageCallError, build_pipeline, preflight
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -82,7 +83,7 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--max-tokens", type=int, help="Override the config value. Reasoning-on runs need more than 1200.")
     p.add_argument("--temperature", type=float, help="Override the config value (0.0 in config).")
     p.add_argument("--top-p", type=float, help="Override the config value (unset in config).")
-    p.add_argument("--related-render", choices=["raw", "hours-v1"], default="raw",
+    p.add_argument("--related-render", choices=["raw", *[r for r in RENDERS if r]], default="raw",
                    help="How related-alert time gaps are shown. raw is soc_triage's integer minutes.")
     p.add_argument("--label", required=True, help="Run name. Output goes to runs/<label>.jsonl")
     p.add_argument("--power", required=True, help="Power state as observed, or 'hosted' for remote endpoints")
