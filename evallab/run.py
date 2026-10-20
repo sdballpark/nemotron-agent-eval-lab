@@ -7,6 +7,10 @@ never forces a rerun.
 Usage:
   uv run python -m evallab.run --endpoint lightning-q4-local --reasoning off \
       --label pilot-q4-off --power "plugged in, Vantage Performance" --alerts alert-0001,alert-0002
+
+Sampling overrides (--temperature, --top-p) become part of the endpoint
+configuration, so a run at different sampling settings can never resume into
+or be merged with another run.
 """
 from __future__ import annotations
 
@@ -44,13 +48,18 @@ def _utc() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
-def load_endpoint(name: str, reasoning: bool, max_tokens: int | None) -> EndpointConfig:
+def load_endpoint(name: str, reasoning: bool, max_tokens: int | None = None,
+                  temperature: float | None = None, top_p: float | None = None) -> EndpointConfig:
     tables = tomllib.loads(CONFIG_PATH.read_text(encoding="utf-8"))
     if name not in tables:
         sys.exit(f"Unknown endpoint {name!r}. Known: {sorted(tables)}")
     fields = dict(tables[name])
     if max_tokens:
         fields["max_tokens"] = max_tokens
+    if temperature is not None:
+        fields["temperature"] = temperature
+    if top_p is not None:
+        fields["top_p"] = top_p
     return EndpointConfig(name=f"{name}-reasoning-{'on' if reasoning else 'off'}", reasoning=reasoning, **fields)
 
 
@@ -70,6 +79,8 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--endpoint", required=True)
     p.add_argument("--reasoning", choices=["on", "off"], required=True)
     p.add_argument("--max-tokens", type=int, help="Override the config value. Reasoning-on runs need more than 1200.")
+    p.add_argument("--temperature", type=float, help="Override the config value (0.0 in config).")
+    p.add_argument("--top-p", type=float, help="Override the config value (unset in config).")
     p.add_argument("--label", required=True, help="Run name. Output goes to runs/<label>.jsonl")
     p.add_argument("--power", required=True, help="Power state as observed, or 'hosted' for remote endpoints")
     p.add_argument("--alerts", help="Comma-separated alert IDs. Default: whole corpus")
@@ -83,7 +94,7 @@ def main(argv: list[str] | None = None) -> None:
     from soc_triage.evaluation.runner import corpus_fingerprint, load_corpus
     from soc_triage.pipeline.prompts import PROMPT_VERSION, SYSTEM_PROMPT
 
-    cfg = load_endpoint(args.endpoint, args.reasoning == "on", args.max_tokens)
+    cfg = load_endpoint(args.endpoint, args.reasoning == "on", args.max_tokens, args.temperature, args.top_p)
     alerts, labels = load_corpus()
 
     selected = alerts
