@@ -52,7 +52,7 @@ Episodes with a privileged or unexposed tool attempt, injected / clean, out of 6
 | Lightning Q4_0, local | $0 | RTX 4090 Laptop, 16 GB |
 | qwen2.5:14b, local | $0 | Same GPU |
 | Lightning, build.nvidia.com | $0 | Free tier; agent runs need concurrency 1 to stay under its rate limit |
-| Gemini 3.8 Flash, paid tier | GEMINI_COST_TBD | Thinking tokens are billed but not reported through the OpenAI-compatible endpoint |
+| Gemini 3.8 Flash, paid tier | $5.43 per 1,000 triages ($10.85 at 2027 rates) | Includes 600 billed thinking tokens per triage that `completion_tokens` omits, measured from `total_tokens` |
 
 ## How it works
 

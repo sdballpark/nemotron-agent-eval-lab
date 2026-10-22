@@ -61,7 +61,7 @@ soc_triage was developed and published with qwen2.5:14b-instruct (README, script
 ## Cost
 - Lightning local and qwen: $0 marginal, on-premises GPU.
 - Lightning hosted: $0 on build.nvidia.com free access.
-- Gemini: GEMINI_COST_TBD for 500 triages, from the AI Studio Spend page once it settles. Paid Tier 1, $15 prepaid, $15 monthly cap. Thinking tokens are billed as output but are not reported in completion_tokens through the OpenAI-compatible endpoint, so per-triage cost must come from billing, not from run logs.
+- Gemini: about $2.73 for the 499 completed triages at the 2026 list rate ($0.75 input / $3.75 output per 1M tokens), or $5.43 per 1,000 triages. Paid Tier 1, $15 prepaid, $15 monthly cap. Thinking tokens are billed as output but missing from `completion_tokens` through the OpenAI-compatible endpoint. The per-triage figure comes from rerun `v1-gemini38flash-on-t1-gaps-tok-r1` (100 alerts, 87 correct, same settings), which recorded `total_tokens`: 2,038 input, 439 visible output and 600 thinking tokens per triage. The 499-triage total applies that thinking rate to this experiment's recorded tokens, so it is an estimate. At 2027 rates ($1.50 / $7.50) the per-1,000 cost doubles to $10.85.
 
 A first Gemini attempt on the free tier exhausted its daily quota after 9 alerts and wrote 91 error rows. It is kept in runs/failed/ and excluded. The runner now stops on exhausted quota (ac14630).
 
@@ -88,3 +88,7 @@ Consequences until corrected by a measured rerun:
 - A list-price cost computed from stored tokens ($1.60 for 499 triages at $0.75 / $3.75 per 1M) understates the true cost by the unrecorded thinking.
 
 Accuracy, false-close and stability results are unaffected.
+
+### Resolved (2026-10-22)
+
+Rerun `v1-gemini38flash-on-t1-gaps-tok-r1` used the same settings with the adapter recording `total_tokens`. Visible output (439 per triage) and accuracy (87/100, all 13 errors in the contested set) match the original repeats, so the run is comparable. Hidden thinking measured 600 tokens per triage. Counting it, Gemini bills about 1,040 output tokens per triage against Lightning's 2,214 to 2,857, which already include its reasoning text. Lightning uses about 2 to 2.5 times Gemini's output tokens, not the 5 times the uncorrected table implied. The cost line above uses the corrected figures.

@@ -1,5 +1,5 @@
 {
- "lab_commit": "5eba5711d28ee02e0f5a0d222fd043e57d216fe1",
+ "lab_commit": "b121eb21133a989b42707ba1ad0e3ba2ae4526e8",
  "excluded_groups": [
   "v1-lightning-hosted-off",
   "v1-lightning-hosted-on",
@@ -42,6 +42,13 @@
    "result": "results/triage/v1-gemini38flash-on-t1-gaps-r5.json",
    "source": "runs/v1-gemini38flash-on-t1-gaps-r5.jsonl",
    "source_sha256": "47a3e0c5403946920abced297de843fee8149b5ff98bba702cfff52ff5783d05",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-gemini38flash-on-t1-gaps-tok-r1.json",
+   "source": "runs/v1-gemini38flash-on-t1-gaps-tok-r1.jsonl",
+   "source_sha256": "92e979a049605158f4f1f827752d41ce035b860fe3c9de932ed85fe42c5beea3",
    "records": 100
   },
   {
