@@ -77,7 +77,7 @@ Requirements: Python 3.12, [uv](https://github.com/astral-sh/uv), Ollama for loc
 
 1. Clone [agentic-soc-triage](https://github.com/sdballpark/agentic-soc-triage) at `e77188f` and [itops-mcp-gateway](https://github.com/sdballpark/itops-mcp-gateway). Set `SOC_TRIAGE_ROOT` and `GATEWAY_ROOT` if they are not under `~/ai/projects/`.
 2. `uv sync`
-3. Local models: `ollama pull qwen2.5:14b-instruct`. The `nemotron-lightning-q4-32k` tag is the ggml-org Q4_0 GGUF of NVIDIA-Nemotron-3.5-Lightning-30B-A3B served with a 32,768-token context. **(Robert: confirm how the tag is built and add the Modelfile or command here.)**
+3. Local models: `ollama pull qwen2.5:14b-instruct`, then build the Lightning tag from the ggml-org Q4_0 GGUF with a 32,768-token context ([configs/ollama/nemotron-lightning-q4-32k.Modelfile](configs/ollama/nemotron-lightning-q4-32k.Modelfile)): `ollama pull hf.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF:Q4_0` and `ollama create nemotron-lightning-q4-32k -f configs/ollama/nemotron-lightning-q4-32k.Modelfile`. Ollama's default context is 4,096 tokens and truncates silently, so the explicit context matters.
 4. Hosted models: export `NVIDIA_API_KEY` and `GEMINI_API_KEY`. Keys are read from the environment only and never written to run files.
 5. Run and summarize:
 
