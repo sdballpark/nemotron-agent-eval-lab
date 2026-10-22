@@ -12,7 +12,7 @@
 - Python dependencies, pinned in uv.lock: openai 3.35.1, pydantic 2.14.1, pytest 9.1.1 (dev), langgraph 1.2.11 and langchain-core 1.6.0 (both matching the original soc_triage runs).
 - openai 3.x uses httpx2. httpx 0.28.1 returns transitively through langchain-core and langgraph-sdk.
 - Transitive drift from the original soc_triage lock, outside the decision path: langgraph-checkpoint 4.3.0 (was 4.2.0), langgraph-prebuilt 1.1.1 (1.1.0), langgraph-sdk 0.4.8 (0.4.3), langsmith 0.14.11 (0.11.1). pydantic is 2.14.1 here against 2.13.4 there.
-- Ollama model nemotron-lightning-q4-32k: the Q4_0 GGUF with num_ctx 32768, defined in ollama/Modelfile.nemotron-lightning-q4-32k.
+- Ollama model nemotron-lightning-q4-32k: the Q4_0 GGUF with num_ctx 32768, defined in configs/ollama/nemotron-lightning-q4-32k.Modelfile.
 - Windows sleep on AC is set to 60 minutes with hibernate off. The original AC values were overwritten without being recorded.
 
 ## Harness (repo nemotron-agent-eval-lab)
