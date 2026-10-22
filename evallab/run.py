@@ -8,10 +8,13 @@ Usage:
   uv run python -m evallab.run --endpoint lightning-q4-local --reasoning off \
       --label pilot-q4-off --power "plugged in, Vantage Performance" --alerts alert-0001,alert-0002
 
-Sampling overrides (--temperature, --top-p) and --related-render become part of
-the run identity, so a run with different settings can never resume into or be
-merged with another run. --related-render raw (the default) is recorded as null,
-matching runs made before the option existed.
+Sampling overrides (--temperature, --top-p), --related-render and
+--corpus-variant become part of the run identity, so a run with different
+settings can never resume into or be merged with another run. Defaults are
+recorded as null, matching runs made before those options existed.
+
+--corpus-variant clean-twins-v1 replaces each injected alert with its clean
+twin (evallab.twins). Labels are unchanged.
 
 --concurrency N triages N alerts at once, each worker with its own pipeline.
 Only the main thread writes the run file, so lines land in completion order,
@@ -40,12 +43,14 @@ from pathlib import Path
 from evallab.adapter import EndpointConfig, QuotaExhausted, complete, make_client
 from evallab.rendering import RENDERS
 from evallab.soc_bridge import TriageCallError, build_pipeline, preflight
+from evallab.twins import VARIANTS
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = REPO_ROOT / "configs" / "endpoints.toml"
 RUNS_DIR = REPO_ROOT / "runs"
 PACKAGES = ("openai", "pydantic", "langgraph", "langchain-core")
-IDENTITY_KEYS = ("soc_triage_head", "corpus_fingerprint", "prompt_sha256", "endpoint", "retries", "related_render")
+IDENTITY_KEYS = ("soc_triage_head", "corpus_fingerprint", "prompt_sha256", "endpoint", "retries", "related_render",
+                 "corpus_variant")
 
 
 def _val(x):
@@ -96,6 +101,8 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--top-p", type=float, help="Override the config value (unset in config).")
     p.add_argument("--related-render", choices=["raw", *[r for r in RENDERS if r]], default="raw",
                    help="How related-alert time gaps are shown. raw is soc_triage's integer minutes.")
+    p.add_argument("--corpus-variant", choices=sorted(VARIANTS),
+                   help="Replace corpus alerts with a variant, e.g. clean-twins-v1. Labels are unchanged.")
     p.add_argument("--label", required=True, help="Run name. Output goes to runs/<label>.jsonl")
     p.add_argument("--power", required=True, help="Power state as observed, or 'hosted' for remote endpoints")
     p.add_argument("--alerts", help="Comma-separated alert IDs. Default: whole corpus")
@@ -116,6 +123,8 @@ def main(argv: list[str] | None = None) -> None:
     cfg = load_endpoint(args.endpoint, args.reasoning == "on", args.max_tokens, args.temperature, args.top_p)
     related_render = None if args.related_render == "raw" else args.related_render
     alerts, labels = load_corpus()
+    if args.corpus_variant:
+        alerts = VARIANTS[args.corpus_variant](alerts)
 
     selected = alerts
     if args.alerts:
@@ -134,6 +143,7 @@ def main(argv: list[str] | None = None) -> None:
         "endpoint": cfg.model_dump(),
         "retries": args.retries,
         "related_render": related_render,
+        "corpus_variant": args.corpus_variant,
     }
 
     RUNS_DIR.mkdir(exist_ok=True)
