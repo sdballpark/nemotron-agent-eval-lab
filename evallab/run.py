@@ -214,6 +214,8 @@ def main(argv: list[str] | None = None) -> None:
             "attempts": len(attempts), "repair_used": len(attempts) > 1,
             "prompt_tokens": _sum(a.prompt_tokens for a in attempts),
             "completion_tokens": _sum(a.completion_tokens for a in attempts),
+            "total_tokens": _sum(a.total_tokens for a in attempts),
+            "reasoning_tokens": _sum(a.reasoning_tokens for a in attempts),
             "reasoning_chars": sum(len(a.reasoning) for a in attempts),
             "model_latency_s": round(sum(a.latency_s for a in attempts), 3),
             "wall_s": round(wall, 3), "trail": trail,

@@ -49,10 +49,12 @@ HEADER_KEYS = ("run_label", "started_utc", "soc_triage_head", "corpus_fingerprin
 ENDPOINT_KEYS = ("name", "base_url", "model", "reasoning", "max_tokens", "temperature", "top_p")
 ALERT_KEYS = ("alert_id", "corpus_slice", "expected", "predicted", "outcome", "status", "confidence",
               "suspected_injection", "flagged_injection", "obeyed_injection", "auto_closed", "attempts",
-              "repair_used", "prompt_tokens", "completion_tokens", "reasoning_chars", "model_latency_s", "wall_s")
+              "repair_used", "prompt_tokens", "completion_tokens", "total_tokens", "reasoning_tokens", "reasoning_chars", "model_latency_s", "wall_s")
 EPISODE_KEYS = ("scenario", "variant", "role", "repeat", "status", "turns", "calls",
                 "privileged_or_unexposed_attempts", "approvals_created", "state_diff", "gate_violations",
-                "prompt_tokens", "completion_tokens", "model_latency_s")
+                "prompt_tokens", "completion_tokens", "total_tokens", "reasoning_tokens", "model_latency_s")
+# Added 2026-10-22; written only when the run recorded them, so older runs export unchanged.
+OPTIONAL_KEYS = frozenset({"total_tokens", "reasoning_tokens"})
 
 
 class SecretFound(ValueError):
@@ -93,11 +95,11 @@ def export_file(src: Path, kind: str) -> dict:
     if not rows or rows[0].get("type") != "header":
         raise ValueError(f"{src} has no header")
     if kind == "triage":
-        items = [{**{k: r.get(k) for k in ALERT_KEYS}, "error": _short_error(r.get("error"))}
+        items = [{**{k: r.get(k) for k in ALERT_KEYS if k not in OPTIONAL_KEYS or k in r}, "error": _short_error(r.get("error"))}
                  for r in rows if r.get("type") == "alert"]
         body = {"header": _header(rows[0]), "alerts": sorted(items, key=lambda x: x["alert_id"])}
     else:
-        items = [{**{k: r.get(k) for k in EPISODE_KEYS}, "error": _short_error(r.get("error"))}
+        items = [{**{k: r.get(k) for k in EPISODE_KEYS if k not in OPTIONAL_KEYS or k in r}, "error": _short_error(r.get("error"))}
                  for r in rows if r.get("type") == "episode"]
         body = {"header": _header(rows[0]), "episodes": sorted(items, key=lambda x: (x["role"], x["scenario"],
                                                                                     x["variant"], x["repeat"]))}

@@ -68,6 +68,8 @@ class Completion(BaseModel):
     finish_reason: str | None = None
     prompt_tokens: int | None = None
     completion_tokens: int | None = None
+    total_tokens: int | None = None
+    reasoning_tokens: int | None = None
     latency_s: float
     error: str | None = None
     api_retries: int = 0
@@ -195,8 +197,24 @@ def complete(
         finish_reason=choice.finish_reason,
         prompt_tokens=r.usage.prompt_tokens if r.usage else None,
         completion_tokens=r.usage.completion_tokens if r.usage else None,
+        total_tokens=r.usage.total_tokens if r.usage else None,
+        reasoning_tokens=hidden_tokens(r.usage),
         latency_s=latency,
         api_retries=len(retry_errors),
         api_retry_errors=retry_errors,
         tool_calls=calls,
     )
+
+
+def hidden_tokens(usage) -> int | None:
+    """Billed tokens missing from prompt + completion.
+
+    Gemini's OpenAI-compatible endpoint leaves thinking out of completion_tokens and
+    reports it only in total_tokens. Returns 0 where the total is just the sum.
+    """
+    if usage is None:
+        return None
+    parts = (usage.total_tokens, usage.prompt_tokens, usage.completion_tokens)
+    if any(x is None for x in parts):
+        return None
+    return max(0, parts[0] - parts[1] - parts[2])
