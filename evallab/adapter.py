@@ -3,6 +3,10 @@
 Only status == "ok" results are eligible for scoring. Every other status
 is an error and must never be mapped to a disposition.
 
+complete() optionally takes OpenAI-style function tools. Tool calls the model
+proposes are returned on Completion.tool_calls; a response that contains only
+tool calls is "ok", not "empty".
+
 Transient provider failures (HTTP 5xx, 429, connection errors) are retried
 with backoff inside complete(). Timeouts and other API errors are not
 retried. Every retry is recorded on the Completion (api_retries,
@@ -19,7 +23,7 @@ from __future__ import annotations
 
 import os
 import time
-from typing import Callable, Literal
+from typing import Any, Callable, Literal
 
 import openai
 from pydantic import BaseModel
@@ -66,6 +70,7 @@ class Completion(BaseModel):
     error: str | None = None
     api_retries: int = 0
     api_retry_errors: list[str] = []
+    tool_calls: list[dict[str, Any]] = []
 
 
 def split_reasoning(message) -> tuple[str, str, ReasoningSource]:
@@ -79,6 +84,17 @@ def split_reasoning(message) -> tuple[str, str, ReasoningSource]:
         reasoning = before.replace("<think>", "", 1).strip()
         return after.strip(), reasoning, "inline"
     return content.strip(), "", "none"
+
+
+def _tool_calls(message) -> list[dict[str, Any]]:
+    out = []
+    for i, tc in enumerate(getattr(message, "tool_calls", None) or []):
+        fn = getattr(tc, "function", None)
+        if fn is None:
+            continue
+        out.append({"id": getattr(tc, "id", None) or f"call_{i}", "name": fn.name,
+                    "arguments": fn.arguments or "{}"})
+    return out
 
 
 def make_client(cfg: EndpointConfig) -> openai.OpenAI:
@@ -104,6 +120,7 @@ def complete(
     cfg: EndpointConfig,
     messages: list[dict],
     sleep: Callable[[float], None] = time.sleep,
+    tools: list[dict] | None = None,
 ) -> Completion:
     kwargs: dict = {"model": cfg.model, "messages": messages, "max_tokens": cfg.max_tokens}
     if cfg.temperature is not None:
@@ -112,6 +129,8 @@ def complete(
         kwargs["top_p"] = cfg.top_p
     if not cfg.reasoning:
         kwargs["reasoning_effort"] = "none"
+    if tools:
+        kwargs["tools"] = tools
 
     base = {"endpoint": cfg.name, "model": cfg.model, "reasoning_enabled": cfg.reasoning}
     retry_errors: list[str] = []
@@ -150,9 +169,10 @@ def complete(
 
     choice = r.choices[0]
     content, reasoning, source = split_reasoning(choice.message)
+    calls = _tool_calls(choice.message)
     if choice.finish_reason == "length":
         status: Status = "length"
-    elif not content:
+    elif not content and not calls:
         status = "empty"
     else:
         status = "ok"
@@ -169,4 +189,5 @@ def complete(
         latency_s=latency,
         api_retries=len(retry_errors),
         api_retry_errors=retry_errors,
+        tool_calls=calls,
     )
