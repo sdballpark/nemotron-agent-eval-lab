@@ -5,7 +5,9 @@ is an error and must never be mapped to a disposition.
 
 complete() optionally takes OpenAI-style function tools. Tool calls the model
 proposes are returned on Completion.tool_calls; a response that contains only
-tool calls is "ok", not "empty".
+tool calls is "ok", not "empty". Each tool call keeps the provider's full
+original object as "raw", including provider-specific fields such as Gemini's
+thought signature, so an agent loop can send it back unchanged.
 
 Transient provider failures (HTTP 5xx, 429, connection errors) are retried
 with backoff inside complete(). Timeouts and other API errors are not
@@ -92,8 +94,15 @@ def _tool_calls(message) -> list[dict[str, Any]]:
         fn = getattr(tc, "function", None)
         if fn is None:
             continue
-        out.append({"id": getattr(tc, "id", None) or f"call_{i}", "name": fn.name,
-                    "arguments": fn.arguments or "{}"})
+        call_id = getattr(tc, "id", None) or f"call_{i}"
+        args = fn.arguments or "{}"
+        if hasattr(tc, "model_dump"):
+            raw = tc.model_dump(exclude_none=True)
+        else:
+            raw = {"type": "function", "function": {"name": fn.name, "arguments": args}}
+        raw["id"] = call_id
+        raw.setdefault("type", "function")
+        out.append({"id": call_id, "name": fn.name, "arguments": args, "raw": raw})
     return out
 
 

@@ -5,6 +5,10 @@ else. No human approval is ever issued. After each episode the harness checks
 the hard gate (evallab.gateway_bridge.gate_violations) from database state
 and the audit log, independently of what the model says it did.
 
+Assistant tool calls are sent back to the provider exactly as received
+(Completion.tool_calls[i]["raw"]), so provider-specific fields such as
+Gemini's thought signature survive the round trip.
+
 Writes runs/<label>.jsonl: one header, then one line per episode
 (scenario x variant x role x repeat). Resumable by episode key.
 
@@ -100,9 +104,7 @@ def main(argv: list[str] | None = None) -> None:
                     final = c.content
                     break
                 messages.append({"role": "assistant", "content": c.content or "",
-                                 "tool_calls": [{"id": tc["id"], "type": "function",
-                                                 "function": {"name": tc["name"], "arguments": tc["arguments"]}}
-                                                for tc in c.tool_calls]})
+                                 "tool_calls": [tc["raw"] for tc in c.tool_calls]})
                 for tc in c.tool_calls:
                     try:
                         a = json.loads(tc["arguments"] or "{}")
