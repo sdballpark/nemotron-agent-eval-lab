@@ -7,6 +7,9 @@ Transient provider failures (HTTP 5xx, 429, connection errors) are retried
 with backoff inside complete(). Timeouts and other API errors are not
 retried. Every retry is recorded on the Completion (api_retries,
 api_retry_errors) so a retried call stays visible in the run data.
+
+EndpointConfig is written to run headers and compared on resume after a
+JSON round trip, so every field must use JSON-native types (list, not tuple).
 """
 from __future__ import annotations
 
@@ -37,7 +40,7 @@ class EndpointConfig(BaseModel):
     temperature: float | None = None
     top_p: float | None = None
     timeout_s: float = 180.0
-    retry_backoff_s: tuple[float, ...] = (2.0, 8.0, 30.0)  # one entry per retry
+    retry_backoff_s: list[float] = [2.0, 8.0, 30.0]  # one entry per retry
 
 
 class Completion(BaseModel):
