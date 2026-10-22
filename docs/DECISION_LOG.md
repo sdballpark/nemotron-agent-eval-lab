@@ -30,5 +30,5 @@ Local Q4 (nemotron-lightning-q4-32k), reasoning on, temperature 1.0, top_p 0.95,
 - The choice is exploratory. Both hours-v1 and gaps-v1 were designed after seeing earlier results. Any published comparison must state this.
 
 ### Open
-- alert-0098 is wrong in every repeat under all three renderings. Trace review pending before treating its label as reliable.
-- Hosted endpoint precision for nvidia/nemotron-3.5-lightning-30b-a3b is not yet verified. Until it is, Q4 vs hosted is a deployment comparison, not a pure quantization comparison.
+- alert-0098 is wrong in every repeat under all three renderings and on both endpoints (EXP-004). Trace and label review pending.
+- Hosted endpoint precision: NVIDIA's API reference for the hosted model documents the NVFP4 checkpoint. Q4 vs hosted is a comparison of two 4-bit recipes plus serving stack, not a quantization-cost measurement. This supersedes Day 1 finding 4. See EXP-004.
