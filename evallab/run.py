@@ -12,6 +12,11 @@ Sampling overrides (--temperature, --top-p) and --related-render become part of
 the run identity, so a run with different settings can never resume into or be
 merged with another run. --related-render raw (the default) is recorded as null,
 matching runs made before the option existed.
+
+--concurrency N triages N alerts at once, each worker with its own pipeline.
+Only the main thread writes the run file, so lines land in completion order,
+not corpus order. Concurrency is recorded but is not part of the run identity.
+Keep it at 1 for local endpoints: parallel requests on one GPU distort latency.
 """
 from __future__ import annotations
 
@@ -19,9 +24,11 @@ import argparse
 import hashlib
 import json
 import sys
+import threading
 import time
 import tomllib
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from importlib.metadata import version
 from pathlib import Path
@@ -90,7 +97,11 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--alerts", help="Comma-separated alert IDs. Default: whole corpus")
     p.add_argument("--limit", type=int)
     p.add_argument("--retries", type=int, default=3, help="Enrichment retries. 3 matches the original runs.")
+    p.add_argument("--concurrency", type=int, default=1,
+                   help="Alerts triaged at once. Keep 1 for local endpoints.")
     args = p.parse_args(argv)
+    if args.concurrency < 1:
+        sys.exit("--concurrency must be at least 1")
 
     head = preflight()
     from soc_triage.disposition import Disposition
@@ -141,74 +152,88 @@ def main(argv: list[str] | None = None) -> None:
 
     todo = [a for a in selected if a["alert_id"] not in done]
     print(f"{path.name}: {len(selected)} selected, {len(done)} already done, {len(todo)} to run. "
-          f"Warm-up {warm.latency_s:.1f}s.")
+          f"Concurrency {args.concurrency}. Warm-up {warm.latency_s:.1f}s.", flush=True)
+
+    tls = threading.local()
+
+    def triage(alert: dict) -> dict:
+        if not hasattr(tls, "pipe"):
+            tls.pipe = build_pipeline(cfg, alerts, args.retries, related_render)
+        pipeline, model = tls.pipe
+        aid = alert["alert_id"]
+        label = labels[aid]
+        model.attempts = []
+        case, trail, status, error = None, [], "ok", None
+        started = time.perf_counter()
+        try:
+            case, trail = pipeline.run(alert)
+            attempts = list(model.attempts)
+        except TriageCallError as e:
+            status, error, attempts = "model_error", str(e), e.attempts
+        except Exception as e:  # anything that is not a model failure
+            status, error, attempts = "harness_error", f"{type(e).__name__}: {e}", list(model.attempts)
+        wall = time.perf_counter() - started
+
+        if status == "ok" and case is None:
+            status, error = "harness_error", "pipeline returned no case"
+
+        if status == "ok":
+            record = score_alert(case, label, alert["tactic"]).model_dump(mode="json")
+            record["suspected_injection"] = case.suspected_injection
+            record["auto_closed"] = case.disposition is Disposition.CLOSE_BENIGN and not case.suspected_injection
+        else:
+            record = {
+                "alert_id": aid, "technique_id": alert["technique_id"], "tactic": alert["tactic"],
+                "corpus_slice": _val(label.corpus_slice), "expected": _val(label.disposition),
+                "predicted": None, "outcome": None, "confidence": None, "enrichment_completeness": None,
+                "degraded": None, "obeyed_injection": None, "flagged_injection": None,
+                "suspected_injection": None, "auto_closed": None,
+            }
+
+        return {
+            "type": "alert", **record, "status": status, "error": error,
+            "attempts": len(attempts), "repair_used": len(attempts) > 1,
+            "prompt_tokens": _sum(a.prompt_tokens for a in attempts),
+            "completion_tokens": _sum(a.completion_tokens for a in attempts),
+            "reasoning_chars": sum(len(a.reasoning) for a in attempts),
+            "model_latency_s": round(sum(a.latency_s for a in attempts), 3),
+            "wall_s": round(wall, 3), "trail": trail,
+            "attempt_log": [a.model_dump() for a in attempts],
+        }
 
     with path.open("a", encoding="utf-8") as out:
         if resuming:
             out.write(json.dumps({"type": "resume", "utc": _utc(), "power": args.power,
+                                  "concurrency": args.concurrency,
                                   "warmup_latency_s": round(warm.latency_s, 3)}) + "\n")
         else:
             out.write(json.dumps({
                 "type": "header", "run_label": args.label, "started_utc": _utc(), **identity,
-                "prompt_version": PROMPT_VERSION, "power": args.power,
+                "prompt_version": PROMPT_VERSION, "power": args.power, "concurrency": args.concurrency,
                 "packages": {name: version(name) for name in PACKAGES},
                 "python": sys.version.split()[0], "ollama_version": ollama_version(cfg.base_url),
                 "selected_alerts": len(selected), "warmup_latency_s": round(warm.latency_s, 3),
             }) + "\n")
         out.flush()
 
-        pipeline, model = build_pipeline(cfg, alerts, args.retries, related_render)
         counts: dict[str, int] = {}
-        for index, alert in enumerate(todo, start=1):
-            aid = alert["alert_id"]
-            label = labels[aid]
-            model.attempts = []
-            case, trail, status, error = None, [], "ok", None
-            started = time.perf_counter()
-            try:
-                case, trail = pipeline.run(alert)
-                attempts = list(model.attempts)
-            except TriageCallError as e:
-                status, error, attempts = "model_error", str(e), e.attempts
-            except Exception as e:  # anything that is not a model failure
-                status, error, attempts = "harness_error", f"{type(e).__name__}: {e}", list(model.attempts)
-            wall = time.perf_counter() - started
+        pool = ThreadPoolExecutor(max_workers=args.concurrency)
+        try:
+            futures = [pool.submit(triage, a) for a in todo]
+            for index, fut in enumerate(as_completed(futures), start=1):
+                record = fut.result()
+                out.write(json.dumps(record) + "\n")
+                out.flush()
+                key = record["outcome"] or record["status"]
+                counts[key] = counts.get(key, 0) + 1
+                print(f"[{index}/{len(todo)}] {record['alert_id']} {record['corpus_slice']:11} "
+                      f"expected={record['expected']:12} predicted={record['predicted']!s:12} {key:16} "
+                      f"attempts={record['attempts']} {record['wall_s']:.1f}s", flush=True)
+        finally:
+            # Ctrl+C or a crash: drop queued alerts. In-flight ones finish but are not written; resume reruns them.
+            pool.shutdown(wait=False, cancel_futures=True)
 
-            if status == "ok" and case is None:
-                status, error = "harness_error", "pipeline returned no case"
-
-            if status == "ok":
-                record = score_alert(case, label, alert["tactic"]).model_dump(mode="json")
-                record["suspected_injection"] = case.suspected_injection
-                record["auto_closed"] = case.disposition is Disposition.CLOSE_BENIGN and not case.suspected_injection
-            else:
-                record = {
-                    "alert_id": aid, "technique_id": alert["technique_id"], "tactic": alert["tactic"],
-                    "corpus_slice": _val(label.corpus_slice), "expected": _val(label.disposition),
-                    "predicted": None, "outcome": None, "confidence": None, "enrichment_completeness": None,
-                    "degraded": None, "obeyed_injection": None, "flagged_injection": None,
-                    "suspected_injection": None, "auto_closed": None,
-                }
-
-            record = {
-                "type": "alert", **record, "status": status, "error": error,
-                "attempts": len(attempts), "repair_used": len(attempts) > 1,
-                "prompt_tokens": _sum(a.prompt_tokens for a in attempts),
-                "completion_tokens": _sum(a.completion_tokens for a in attempts),
-                "reasoning_chars": sum(len(a.reasoning) for a in attempts),
-                "model_latency_s": round(sum(a.latency_s for a in attempts), 3),
-                "wall_s": round(wall, 3), "trail": trail,
-                "attempt_log": [a.model_dump() for a in attempts],
-            }
-            out.write(json.dumps(record) + "\n")
-            out.flush()
-
-            key = record["outcome"] or status
-            counts[key] = counts.get(key, 0) + 1
-            print(f"[{index}/{len(todo)}] {aid} {record['corpus_slice']:11} expected={record['expected']:12} "
-                  f"predicted={record['predicted']!s:12} {key:16} attempts={len(attempts)} {wall:.1f}s")
-
-    print("counts:", counts)
+    print("counts:", counts, flush=True)
 
 
 if __name__ == "__main__":
