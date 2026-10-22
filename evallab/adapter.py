@@ -2,12 +2,17 @@
 
 Only status == "ok" results are eligible for scoring. Every other status
 is an error and must never be mapped to a disposition.
+
+Transient provider failures (HTTP 5xx, 429, connection errors) are retried
+with backoff inside complete(). Timeouts and other API errors are not
+retried. Every retry is recorded on the Completion (api_retries,
+api_retry_errors) so a retried call stays visible in the run data.
 """
 from __future__ import annotations
 
 import os
 import time
-from typing import Literal
+from typing import Callable, Literal
 
 import openai
 from pydantic import BaseModel
@@ -16,6 +21,10 @@ Status = Literal["ok", "length", "empty", "timeout", "api_error"]
 ReasoningSource = Literal["field", "inline", "none"]
 
 LOCAL_PLACEHOLDER_KEY = "ollama"
+
+# APITimeoutError subclasses APIConnectionError, so timeouts are handled
+# before this tuple is checked and are never retried.
+RETRYABLE_ERRORS = (openai.InternalServerError, openai.RateLimitError, openai.APIConnectionError)
 
 
 class EndpointConfig(BaseModel):
@@ -28,6 +37,7 @@ class EndpointConfig(BaseModel):
     temperature: float | None = None
     top_p: float | None = None
     timeout_s: float = 180.0
+    retry_backoff_s: tuple[float, ...] = (2.0, 8.0, 30.0)  # one entry per retry
 
 
 class Completion(BaseModel):
@@ -43,6 +53,8 @@ class Completion(BaseModel):
     completion_tokens: int | None = None
     latency_s: float
     error: str | None = None
+    api_retries: int = 0
+    api_retry_errors: list[str] = []
 
 
 def split_reasoning(message) -> tuple[str, str, ReasoningSource]:
@@ -68,7 +80,16 @@ def make_client(cfg: EndpointConfig) -> openai.OpenAI:
     return openai.OpenAI(api_key=key, base_url=cfg.base_url, timeout=cfg.timeout_s, max_retries=0)
 
 
-def complete(client: openai.OpenAI, cfg: EndpointConfig, messages: list[dict]) -> Completion:
+def _short(e: Exception) -> str:
+    return f"{type(e).__name__}: {str(e)[:160]}"
+
+
+def complete(
+    client: openai.OpenAI,
+    cfg: EndpointConfig,
+    messages: list[dict],
+    sleep: Callable[[float], None] = time.sleep,
+) -> Completion:
     kwargs: dict = {"model": cfg.model, "messages": messages, "max_tokens": cfg.max_tokens}
     if cfg.temperature is not None:
         kwargs["temperature"] = cfg.temperature
@@ -78,14 +99,34 @@ def complete(client: openai.OpenAI, cfg: EndpointConfig, messages: list[dict]) -
         kwargs["reasoning_effort"] = "none"
 
     base = {"endpoint": cfg.name, "model": cfg.model, "reasoning_enabled": cfg.reasoning}
-    start = time.perf_counter()
-    try:
-        r = client.chat.completions.create(**kwargs)
-    except openai.APITimeoutError as e:
-        return Completion(**base, status="timeout", latency_s=time.perf_counter() - start, error=str(e)[:500])
-    except openai.APIError as e:
-        return Completion(**base, status="api_error", latency_s=time.perf_counter() - start, error=str(e)[:500])
-    latency = time.perf_counter() - start
+    retry_errors: list[str] = []
+
+    def failed(status: Status, e: Exception, start: float) -> Completion:
+        return Completion(
+            **base,
+            status=status,
+            latency_s=time.perf_counter() - start,
+            error=str(e)[:500],
+            api_retries=len(retry_errors),
+            api_retry_errors=retry_errors,
+        )
+
+    while True:
+        start = time.perf_counter()
+        try:
+            r = client.chat.completions.create(**kwargs)
+            break
+        except openai.APITimeoutError as e:
+            return failed("timeout", e, start)
+        except RETRYABLE_ERRORS as e:
+            if len(retry_errors) >= len(cfg.retry_backoff_s):
+                return failed("api_error", e, start)
+            wait = cfg.retry_backoff_s[len(retry_errors)]
+            retry_errors.append(_short(e))
+            sleep(wait)
+        except openai.APIError as e:
+            return failed("api_error", e, start)
+    latency = time.perf_counter() - start  # successful attempt only, excludes backoff
 
     choice = r.choices[0]
     content, reasoning, source = split_reasoning(choice.message)
@@ -106,4 +147,6 @@ def complete(client: openai.OpenAI, cfg: EndpointConfig, messages: list[dict]) -
         prompt_tokens=r.usage.prompt_tokens if r.usage else None,
         completion_tokens=r.usage.completion_tokens if r.usage else None,
         latency_s=latency,
+        api_retries=len(retry_errors),
+        api_retry_errors=retry_errors,
     )
