@@ -17,6 +17,10 @@ matching runs made before the option existed.
 Only the main thread writes the run file, so lines land in completion order,
 not corpus order. Concurrency is recorded but is not part of the run identity.
 Keep it at 1 for local endpoints: parallel requests on one GPU distort latency.
+
+If the provider quota runs out (QuotaExhausted), the run stops. Alerts already
+written are kept, the alert in flight is not written, and the same command
+resumes once the quota resets.
 """
 from __future__ import annotations
 
@@ -33,7 +37,7 @@ from datetime import datetime, timezone
 from importlib.metadata import version
 from pathlib import Path
 
-from evallab.adapter import EndpointConfig, complete, make_client
+from evallab.adapter import EndpointConfig, QuotaExhausted, complete, make_client
 from evallab.rendering import RENDERS
 from evallab.soc_bridge import TriageCallError, build_pipeline, preflight
 
@@ -146,7 +150,10 @@ def main(argv: list[str] | None = None) -> None:
         done = {r["alert_id"] for r in rows if r.get("type") == "alert"}
 
     client = make_client(cfg)
-    warm = complete(client, cfg, [{"role": "user", "content": "Reply with the word OK."}])
+    try:
+        warm = complete(client, cfg, [{"role": "user", "content": "Reply with the word OK."}])
+    except QuotaExhausted as e:
+        sys.exit(f"Quota exhausted at warm-up, nothing written: {e}")
     if warm.status not in ("ok", "length"):
         sys.exit(f"Warm-up failed: {warm.status} {warm.error}")
 
@@ -168,6 +175,8 @@ def main(argv: list[str] | None = None) -> None:
         try:
             case, trail = pipeline.run(alert)
             attempts = list(model.attempts)
+        except QuotaExhausted:
+            raise  # stop the run; this alert is not written
         except TriageCallError as e:
             status, error, attempts = "model_error", str(e), e.attempts
         except Exception as e:  # anything that is not a model failure
@@ -201,6 +210,7 @@ def main(argv: list[str] | None = None) -> None:
             "attempt_log": [a.model_dump() for a in attempts],
         }
 
+    stopped: str | None = None
     with path.open("a", encoding="utf-8") as out:
         if resuming:
             out.write(json.dumps({"type": "resume", "utc": _utc(), "power": args.power,
@@ -229,11 +239,16 @@ def main(argv: list[str] | None = None) -> None:
                 print(f"[{index}/{len(todo)}] {record['alert_id']} {record['corpus_slice']:11} "
                       f"expected={record['expected']:12} predicted={record['predicted']!s:12} {key:16} "
                       f"attempts={record['attempts']} {record['wall_s']:.1f}s", flush=True)
+        except QuotaExhausted as e:
+            stopped = str(e)
         finally:
-            # Ctrl+C or a crash: drop queued alerts. In-flight ones finish but are not written; resume reruns them.
+            # Ctrl+C, a crash or a spent quota: drop queued alerts. In-flight ones finish
+            # but are not written; resume reruns them.
             pool.shutdown(wait=False, cancel_futures=True)
 
     print("counts:", counts, flush=True)
+    if stopped:
+        sys.exit(f"Stopped, quota exhausted: {stopped}\nWritten alerts are kept. Rerun the same command after the quota resets.")
 
 
 if __name__ == "__main__":

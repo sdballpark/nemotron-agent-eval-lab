@@ -8,6 +8,10 @@ with backoff inside complete(). Timeouts and other API errors are not
 retried. Every retry is recorded on the Completion (api_retries,
 api_retry_errors) so a retried call stays visible in the run data.
 
+A 429 that names a daily quota, or a 429 that persists through every retry,
+raises QuotaExhausted instead of returning an error. The runner stops on it,
+so an exhausted quota never fills a run file with error rows.
+
 EndpointConfig is written to run headers and compared on resume after a
 JSON round trip, so every field must use JSON-native types (list, not tuple).
 """
@@ -28,6 +32,10 @@ LOCAL_PLACEHOLDER_KEY = "ollama"
 # APITimeoutError subclasses APIConnectionError, so timeouts are handled
 # before this tuple is checked and are never retried.
 RETRYABLE_ERRORS = (openai.InternalServerError, openai.RateLimitError, openai.APIConnectionError)
+
+
+class QuotaExhausted(Exception):
+    """Provider quota is spent. The run must stop rather than record errors."""
 
 
 class EndpointConfig(BaseModel):
@@ -87,6 +95,10 @@ def _short(e: Exception) -> str:
     return f"{type(e).__name__}: {str(e)[:160]}"
 
 
+def _is_daily_quota(e: Exception) -> bool:
+    return "perday" in str(e).replace(" ", "").replace("_", "").lower()
+
+
 def complete(
     client: openai.OpenAI,
     cfg: EndpointConfig,
@@ -122,7 +134,12 @@ def complete(
         except openai.APITimeoutError as e:
             return failed("timeout", e, start)
         except RETRYABLE_ERRORS as e:
+            rate_limited = isinstance(e, openai.RateLimitError)
+            if rate_limited and _is_daily_quota(e):
+                raise QuotaExhausted(f"daily quota: {_short(e)}") from e
             if len(retry_errors) >= len(cfg.retry_backoff_s):
+                if rate_limited:
+                    raise QuotaExhausted(f"429 persisted through {len(retry_errors)} retries: {_short(e)}") from e
                 return failed("api_error", e, start)
             wait = cfg.retry_backoff_s[len(retry_errors)]
             retry_errors.append(_short(e))
