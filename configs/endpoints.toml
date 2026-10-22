@@ -12,3 +12,9 @@ model = "nvidia/nemotron-3.5-lightning-30b-a3b"
 api_key_env = "NVIDIA_API_KEY"
 max_tokens = 1200
 temperature = 0.0
+
+[qwen-14b-local]
+base_url = "http://localhost:11434/v1"
+model = "qwen2.5:14b-instruct"
+max_tokens = 1200
+temperature = 0.0
