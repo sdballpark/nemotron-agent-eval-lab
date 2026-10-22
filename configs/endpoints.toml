@@ -18,3 +18,10 @@ base_url = "http://localhost:11434/v1"
 model = "qwen2.5:14b-instruct"
 max_tokens = 1200
 temperature = 0.0
+
+[gemini-flash]
+base_url = "https://generativelanguage.googleapis.com/v1beta/openai/"
+model = "gemini-3.8-flash"
+api_key_env = "GEMINI_API_KEY"
+max_tokens = 1200
+temperature = 0.0
