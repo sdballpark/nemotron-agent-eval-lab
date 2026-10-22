@@ -53,7 +53,7 @@ Uncontested alerts that separate the models:
 alert-0032, alert-0033 and alert-0098 all sit in one entity cluster: host HELPDESK-0012 and user k.iverson. That cluster holds 15 of the corpus's 34 close_benign alerts, all labeled close_benign. Its alerts present the model with a dense history of routine enumeration and PowerShell activity. Lightning traces cite that history as an attack pattern (EXP-004, alert-0098). Gemini closes the uncontested cluster alerts and escalates the contested ones.
 
 ## Contested alerts
-Gemini escalated 14 of the 16 contested alerts in all 5 repeats, the direction proposed for their v2 labels in the label review. qwen escalated 10 of 16 on majority. Model agreement is supporting evidence for the review, not validation: the review's test uses only the rendered prompt, and model outputs were excluded as evidence by rule.
+Gemini escalated 14 of the 16 contested alerts in all 5 repeats, the direction proposed for their v2 labels in the label review. qwen escalated 9 of 16 on majority. Model agreement is supporting evidence for the review, not validation: the review's test uses only the rendered prompt, and model outputs were excluded as evidence by rule.
 
 ## Home-field condition for qwen
 soc_triage was developed and published with qwen2.5:14b-instruct (README, scripts/run_eval.py). The triage prompt has a single commit (b24884a), written before the first model evaluation (7aad5eb). One alternative prompt was tested on qwen and rejected for a false-close regression (f9008c3). The prompt was therefore not iterated against qwen's outputs, but it did survive one selection step measured on qwen. qwen's 90.2 here is consistent with the published 90% from 7aad5eb, which used raw rendering, so it is not a strict reproduction.
