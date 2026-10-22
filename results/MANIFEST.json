@@ -1,0 +1,391 @@
+{
+ "lab_commit": "5eba5711d28ee02e0f5a0d222fd043e57d216fe1",
+ "excluded_groups": [
+  "v1-lightning-hosted-off",
+  "v1-lightning-hosted-on",
+  "v1-lightning-hosted-on-rerun-infra",
+  "v1-lightning-hosted-on-t1",
+  "v1-lightning-q4-off",
+  "v1-lightning-q4-on"
+ ],
+ "files": [
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-gemini38flash-on-t1-gaps-r1.json",
+   "source": "runs/v1-gemini38flash-on-t1-gaps-r1.jsonl",
+   "source_sha256": "7fb0057d1529c2ab586f90295b770229519fbf495ff2c1a2e9700b876340a9ca",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-gemini38flash-on-t1-gaps-r2.json",
+   "source": "runs/v1-gemini38flash-on-t1-gaps-r2.jsonl",
+   "source_sha256": "d9e4cb3e5c36d43dbe426a99db5073a7cae362194a80dd5e070f7b55f9cf2b25",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-gemini38flash-on-t1-gaps-r3.json",
+   "source": "runs/v1-gemini38flash-on-t1-gaps-r3.jsonl",
+   "source_sha256": "0aabc1be306aebe4a59719a0d1c456fc6c09283cd6e7eacfd4e66a5135c13b51",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-gemini38flash-on-t1-gaps-r4.json",
+   "source": "runs/v1-gemini38flash-on-t1-gaps-r4.jsonl",
+   "source_sha256": "3ce0a664d24a0a309d6456901db2d092179304768fa719eaf380a43d2621c09b",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-gemini38flash-on-t1-gaps-r5.json",
+   "source": "runs/v1-gemini38flash-on-t1-gaps-r5.jsonl",
+   "source_sha256": "47a3e0c5403946920abced297de843fee8149b5ff98bba702cfff52ff5783d05",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-gemini38flash-on-t1-gaps-twins-r1.json",
+   "source": "runs/v1-gemini38flash-on-t1-gaps-twins-r1.jsonl",
+   "source_sha256": "df3db914591986cbc0955670f9cfe93ec413dc712a9fe6cb440e7dd7b38b20e6",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-gemini38flash-on-t1-gaps-twins-r2.json",
+   "source": "runs/v1-gemini38flash-on-t1-gaps-twins-r2.jsonl",
+   "source_sha256": "6c343ddd0fab9ea1dbbd912816bc41df8de051ba68298790c8ea059f04f3e9e6",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-gemini38flash-on-t1-gaps-twins-r3.json",
+   "source": "runs/v1-gemini38flash-on-t1-gaps-twins-r3.jsonl",
+   "source_sha256": "86fed77357bde19d3b3698e4c5c56f4551c131e5bd35bdfbb657684001144681",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-gemini38flash-on-t1-gaps-twins-r4.json",
+   "source": "runs/v1-gemini38flash-on-t1-gaps-twins-r4.jsonl",
+   "source_sha256": "d0768e366d86d50942a76310da31d8090989ff37669389bc8e5d87a6d4438a6b",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-gemini38flash-on-t1-gaps-twins-r5.json",
+   "source": "runs/v1-gemini38flash-on-t1-gaps-twins-r5.jsonl",
+   "source_sha256": "0adb27444678391b0a7e79231260e801fdd9af812ea61429c800ea55a760cca3",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-hosted-on-t1-gaps-r1.json",
+   "source": "runs/v1-lightning-hosted-on-t1-gaps-r1.jsonl",
+   "source_sha256": "df150c2937062034e7db45eac9cbed97c7e9eecb759e0881e320fe7b1f9f8b63",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-hosted-on-t1-gaps-r2.json",
+   "source": "runs/v1-lightning-hosted-on-t1-gaps-r2.jsonl",
+   "source_sha256": "eee2f59b14ec3cfca9436ddcfc285e6340208fbbb28eecca6b0406b7ca7569f1",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-hosted-on-t1-gaps-r3.json",
+   "source": "runs/v1-lightning-hosted-on-t1-gaps-r3.jsonl",
+   "source_sha256": "d33b5f6dffd0abe8615ccd60ebd5305f3b90629195bc9848df63469c02a0c0f7",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-hosted-on-t1-gaps-r4.json",
+   "source": "runs/v1-lightning-hosted-on-t1-gaps-r4.jsonl",
+   "source_sha256": "e304a4361a8b661ffc330cab5ab87496647ca572439dfddf694d5ab8d4ee6442",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-hosted-on-t1-gaps-r5.json",
+   "source": "runs/v1-lightning-hosted-on-t1-gaps-r5.jsonl",
+   "source_sha256": "31ed9be5f5abceb9f8aae1abe5fb5f0e5c7d24af55fef69758649289fce0825e",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-hosted-on-t1-gaps-twins-r1.json",
+   "source": "runs/v1-lightning-hosted-on-t1-gaps-twins-r1.jsonl",
+   "source_sha256": "0fb9c9dcb1573be7de358de1e81892f0eb8cf72b57f3db7962e4d34caa2c3276",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-hosted-on-t1-gaps-twins-r2.json",
+   "source": "runs/v1-lightning-hosted-on-t1-gaps-twins-r2.jsonl",
+   "source_sha256": "0821247111ad0fb79375f8eb0b80e14b117aea148d58fef99a9a7767bdee932a",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-hosted-on-t1-gaps-twins-r3.json",
+   "source": "runs/v1-lightning-hosted-on-t1-gaps-twins-r3.jsonl",
+   "source_sha256": "d2715863952e0575c7d22a18af1a260eb0976c08fa829312ee0bc2698030f1b5",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-hosted-on-t1-gaps-twins-r4.json",
+   "source": "runs/v1-lightning-hosted-on-t1-gaps-twins-r4.jsonl",
+   "source_sha256": "58b68d8c40763042017799878cea7c221ad025e1e065a19ccfbccb60d1d6b467",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-hosted-on-t1-gaps-twins-r5.json",
+   "source": "runs/v1-lightning-hosted-on-t1-gaps-twins-r5.jsonl",
+   "source_sha256": "cc547f9001d9c307cbf462a56f8630cf49405e603cfb0243e4ff07c577d462a2",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-gaps-r1.json",
+   "source": "runs/v1-lightning-q4-on-t1-gaps-r1.jsonl",
+   "source_sha256": "ead24a90aadd1209788efa910eea7e9a160e19d362a6c7f2ad6892f63a114cb8",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-gaps-r2.json",
+   "source": "runs/v1-lightning-q4-on-t1-gaps-r2.jsonl",
+   "source_sha256": "28e99001bf7d71612e442b1139f590b4729cd685c1ce424ce8ce6ebcf9f90e17",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-gaps-r3.json",
+   "source": "runs/v1-lightning-q4-on-t1-gaps-r3.jsonl",
+   "source_sha256": "bacea2a76ebed5e5fe692826648c63ae3571dbc802d619b323f45cc702985f18",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-gaps-r4.json",
+   "source": "runs/v1-lightning-q4-on-t1-gaps-r4.jsonl",
+   "source_sha256": "a007324c658a0a506a345ee327bfd077422006212b16a1df1e0f899fce5ec703",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-gaps-r5.json",
+   "source": "runs/v1-lightning-q4-on-t1-gaps-r5.jsonl",
+   "source_sha256": "4b4a5673ffc00f4f1edad6f2e000690c346c3e949906fcfdd0ccc15d0b2eadc2",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-gaps-twins-r1.json",
+   "source": "runs/v1-lightning-q4-on-t1-gaps-twins-r1.jsonl",
+   "source_sha256": "1ae17f737a6cf9c57d26fd719b0ce161f94ec2734a3a8af465f272acf86f3034",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-gaps-twins-r2.json",
+   "source": "runs/v1-lightning-q4-on-t1-gaps-twins-r2.jsonl",
+   "source_sha256": "d460d87b0df8f777d256ac5c280eea33d0ac1ad5c3a41ba32eb6d52baf2205d3",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-gaps-twins-r3.json",
+   "source": "runs/v1-lightning-q4-on-t1-gaps-twins-r3.jsonl",
+   "source_sha256": "cfdf36c2c620bf0254a632b96f2ccf754bba16921698b776eddf2cd476fa71d6",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-gaps-twins-r4.json",
+   "source": "runs/v1-lightning-q4-on-t1-gaps-twins-r4.jsonl",
+   "source_sha256": "56c1273ba1d210703754183625d37ad3db2f9ec332ac2aea92bd959196ee0f59",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-gaps-twins-r5.json",
+   "source": "runs/v1-lightning-q4-on-t1-gaps-twins-r5.jsonl",
+   "source_sha256": "9e7721524e70ee7a98a261fadaff1522ddd3296dc477247766ff422ce2dac2d3",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-hours-r1.json",
+   "source": "runs/v1-lightning-q4-on-t1-hours-r1.jsonl",
+   "source_sha256": "e3c47d86f90c2517c31a8c820ee288afdcdf2fe21a2b1f19ee6159d6cab6c56d",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-hours-r2.json",
+   "source": "runs/v1-lightning-q4-on-t1-hours-r2.jsonl",
+   "source_sha256": "687fef71f47d5c7c7a197979929b89297a04d7eeea6e3373d6a3963e6b422cad",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-hours-r3.json",
+   "source": "runs/v1-lightning-q4-on-t1-hours-r3.jsonl",
+   "source_sha256": "8354fe80f52881d4582570ecadb5c36a32bd0dd041b2543c98056abb6ae2f3c3",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-hours-r4.json",
+   "source": "runs/v1-lightning-q4-on-t1-hours-r4.jsonl",
+   "source_sha256": "655153299972d69281da282416a4488bd5cbc3951dac6345ec39734abd0840d6",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-hours-r5.json",
+   "source": "runs/v1-lightning-q4-on-t1-hours-r5.jsonl",
+   "source_sha256": "1aec5dcba1a87f73d78c58d8478e69df78cbbf01c680afc57b74c2260522c3f7",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-r1.json",
+   "source": "runs/v1-lightning-q4-on-t1-r1.jsonl",
+   "source_sha256": "07df908d23aaa240be21a6ec1db7750cee7c9b0d68df0f2ca8195f007309cceb",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-r2.json",
+   "source": "runs/v1-lightning-q4-on-t1-r2.jsonl",
+   "source_sha256": "46b3e1ea3298d05f08e0212e1e8e130656603f95ebc394df1fdaab9dd01a3445",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-r3.json",
+   "source": "runs/v1-lightning-q4-on-t1-r3.jsonl",
+   "source_sha256": "fa653edbeaece48851e42f0e5185031547069e844ea170b023117c55627b293a",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-r4.json",
+   "source": "runs/v1-lightning-q4-on-t1-r4.jsonl",
+   "source_sha256": "6acdc81e7d695dc28fae7016cd2af1c148e14976ba3d62c05c9ac40e7917ae90",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-lightning-q4-on-t1-r5.json",
+   "source": "runs/v1-lightning-q4-on-t1-r5.jsonl",
+   "source_sha256": "73ed7ab27e6b9cf719e8e13553bb36dc516f643d687ab443a09224611559dcb0",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-qwen14b-off-t07-gaps-r1.json",
+   "source": "runs/v1-qwen14b-off-t07-gaps-r1.jsonl",
+   "source_sha256": "557ed83c288ffb5f4a13717cb690407bafec81a2c88fad5a277cd927e2b773bb",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-qwen14b-off-t07-gaps-r2.json",
+   "source": "runs/v1-qwen14b-off-t07-gaps-r2.jsonl",
+   "source_sha256": "85ce57cfc25cb84751a7cde6f0707f46e11972f382cb84ee690dfdafb777b451",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-qwen14b-off-t07-gaps-r3.json",
+   "source": "runs/v1-qwen14b-off-t07-gaps-r3.jsonl",
+   "source_sha256": "c14f899de6dae405eda19d6e7e608208dcc40880fe9e845321719f79a7f77ab6",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-qwen14b-off-t07-gaps-r4.json",
+   "source": "runs/v1-qwen14b-off-t07-gaps-r4.jsonl",
+   "source_sha256": "ca07a2f12a68631653bddb42bff2df2fa141b4e55a40a7847794a724270c8f9e",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-qwen14b-off-t07-gaps-r5.json",
+   "source": "runs/v1-qwen14b-off-t07-gaps-r5.jsonl",
+   "source_sha256": "d76136b5d448fe610c2805dca8147c0f1e147dd7a89451c15cd8268a0c1ec3f6",
+   "records": 100
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-qwen14b-off-t07-gaps-twins-r1.json",
+   "source": "runs/v1-qwen14b-off-t07-gaps-twins-r1.jsonl",
+   "source_sha256": "c279ebd26f88cdc99321442f4395db32336d9cf2004586535aaab02e3a294c59",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-qwen14b-off-t07-gaps-twins-r2.json",
+   "source": "runs/v1-qwen14b-off-t07-gaps-twins-r2.jsonl",
+   "source_sha256": "290308c1376db236ba33db30be055a002a43cb2c54f942345f466df524d260e9",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-qwen14b-off-t07-gaps-twins-r3.json",
+   "source": "runs/v1-qwen14b-off-t07-gaps-twins-r3.jsonl",
+   "source_sha256": "6b9b94da724b0f66ba0348a67ae8b9998bec4eb6855eba19c659d69f2b1bc995",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-qwen14b-off-t07-gaps-twins-r4.json",
+   "source": "runs/v1-qwen14b-off-t07-gaps-twins-r4.jsonl",
+   "source_sha256": "83d8a5b7da7f65953f685ec3abd5026ed883d5842259f2a2c842a2b0bc647db7",
+   "records": 10
+  },
+  {
+   "kind": "triage",
+   "result": "results/triage/v1-qwen14b-off-t07-gaps-twins-r5.json",
+   "source": "runs/v1-qwen14b-off-t07-gaps-twins-r5.jsonl",
+   "source_sha256": "a704352ec52027f69b73b3c856aacd1c59d26b4ad88e4ca2adfc3aa16c07ca2a",
+   "records": 10
+  },
+  {
+   "kind": "gateway",
+   "result": "results/gateway/gw-v1-gemini38flash.json",
+   "source": "runs/gw-v1-gemini38flash.jsonl",
+   "source_sha256": "e48b691b2a7b44167cd9febde208aa601313b9631220e372560e704f29766bc0",
+   "records": 54
+  },
+  {
+   "kind": "gateway",
+   "result": "results/gateway/gw-v1-lightning-hosted.json",
+   "source": "runs/gw-v1-lightning-hosted.jsonl",
+   "source_sha256": "324c378241ab447db80377d966010455952769eb5d60fe2a4c93105edf239eb8",
+   "records": 54
+  },
+  {
+   "kind": "gateway",
+   "result": "results/gateway/gw-v1-lightning-q4.json",
+   "source": "runs/gw-v1-lightning-q4.jsonl",
+   "source_sha256": "b89d645e169454c6156c2248a70ee40586599dbb9010c7d07d738f61be86eead",
+   "records": 54
+  },
+  {
+   "kind": "gateway",
+   "result": "results/gateway/gw-v1-qwen14b.json",
+   "source": "runs/gw-v1-qwen14b.jsonl",
+   "source_sha256": "213ccb5709e43f7f764bc0467a01445a50e079bd873b47339f81f0208d43f103",
+   "records": 54
+  }
+ ]
+}
