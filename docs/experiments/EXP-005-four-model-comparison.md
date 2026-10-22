@@ -78,3 +78,13 @@ A first Gemini attempt on the free tier exhausted its daily quota after 9 alerts
 - Sampling and reasoning settings follow each vendor and differ between models.
 - Gemini traces carry the model's JSON reasoning field only; its thinking text is not returned.
 - One synthetic corpus. Results say nothing about production alert volumes or distributions.
+
+## Correction (2026-10-22): Gemini token counts and cost exclude thinking
+
+Gemini's OpenAI-compatible endpoint reports `completion_tokens` as visible output only. Thinking tokens are billed at the output rate but appear only in `total_tokens`, and `completion_tokens_details` is empty. A direct check: prompt 16 + completion 23 = 39, total 398, so 359 thinking tokens were unreported. The adapter stored prompt and completion and dropped the total, so this experiment never recorded Gemini's thinking.
+
+Consequences until corrected by a measured rerun:
+- The Gemini median completion tokens (443-460) count visible output only. Lightning's counts include its reasoning text, so the token row is not comparable across models and should not be read as Gemini using fewer tokens.
+- A list-price cost computed from stored tokens ($1.60 for 499 triages at $0.75 / $3.75 per 1M) understates the true cost by the unrecorded thinking.
+
+Accuracy, false-close and stability results are unaffected.
