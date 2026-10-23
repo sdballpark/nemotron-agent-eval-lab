@@ -52,7 +52,9 @@ Episodes with a privileged or unexposed tool attempt, injected / clean, out of 6
 | Lightning Q4_0, local | $0 | RTX 4090 Laptop, 16 GB |
 | qwen2.5:14b, local | $0 | Same GPU |
 | Lightning, build.nvidia.com | $0 | Free tier; agent runs need concurrency 1 to stay under its rate limit |
-| Gemini 3.8 Flash, paid tier | $5.43 per 1,000 triages ($10.85 at 2027 rates) | Includes 600 billed thinking tokens per triage that `completion_tokens` omits, measured from `total_tokens` |
+| Gemini 3.8 Flash, paid tier | about $2.73 ($5.43 per 1,000; $10.85 per 1,000 at 2027 rates) | Includes 600 billed thinking tokens per triage that `completion_tokens` omits, measured from `total_tokens` |
+
+Read together with the results tables, the open models cost nothing per token and matched Gemini on verdicts: no false closes, and no significant accuracy gap on uncontested alerts. Their costs land elsewhere. Lightning's latency comes mostly from reasoning mode, which writes 2,200 to 2,900 tokens per alert against about 250 for qwen, which has no reasoning mode; the weights being open has little to do with it. A single laptop GPU serves one request at a time, while the Gemini runs used four concurrent requests, so local throughput falls behind at SOC volume. Robustness is the other cost: qwen silently followed an injected instruction in EXP-006, and in EXP-007 three of the four configurations requested privileged actions, every one refused by the gateway. The $0 figures leave out hardware and power, which these runs did not measure.
 
 ## How it works
 
